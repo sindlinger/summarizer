@@ -1,0 +1,17 @@
+# Project Structure: 
+# medical_summarizer/ 
+# ├── .gitignore 
+# ├── README.md 
+# ├── requirements.txt 
+# ├── setup.py 
+# ├── medical_summarizer/ 
+# │   ├── __init__.py 
+# │   ├── config.py 
+# │   ├── data_loader.py 
+# │   ├── model.py 
+# │   ├── tokenizer.py 
+# │   ├── summarizer.py 
+# │   └── utils.py 
+# └── scripts/ 
+#     ├── download_model.py 
+#     └── run_summarization.py 

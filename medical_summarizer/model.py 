@@ -1,0 +1,53 @@
+# medical_summarizer/model.py
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import torch
+
+class MedicalSummarizerModel:
+    def __init__(self, model_name, model_path):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=model_path)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name, cache_dir=model_path).to(self.device)
+
+    def summarize(self, texts, max_length, min_length, num_beams, no_repeat_ngram_size):
+        inputs = self.tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512).to(self.device)
+        summary_ids = self.model.generate(
+            inputs.input_ids,
+            num_beams=num_beams,
+            no_repeat_ngram_size=no_repeat_ngram_size,
+            min_length=min_length,
+            max_length=max_length,
+            early_stopping=True
+        )
+        return self.tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+
+# scripts/download_model.py
+import os
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from medical_summarizer.config import Config
+
+def download_model():
+    model_dir = Config.MODEL_PATH
+    os.makedirs(model_dir, exist_ok=True)
+    print(f"Downloading {Config.MODEL_NAME} to {model_dir}")
+    tokenizer = AutoTokenizer.from_pretrained(Config.MODEL_NAME, cache_dir=model_dir)
+    model = AutoModelForSeq2SeqLM.from_pretrained(Config.MODEL_NAME, cache_dir=model_dir)
+    print("Model and tokenizer downloaded successfully.")
+
+if __name__ == "__main__":
+    download_model()
+
+# scripts/run_summarization.py
+import argparse
+from medical_summarizer import MedicalLectureSummarizer, Config
+
+def main():
+    parser = argparse.ArgumentParser(description="Run medical lecture summarization")
+    parser.add_argument("--input_dir", required=True, help="Directory containing input lecture files")
+    parser.add_argument("--output_dir", required=True, help="Directory to save summarized lectures")
+    args = parser.parse_args()
+
+    summarizer = MedicalLectureSummarizer(Config)
+    summarizer.summarize_directory(args.input_dir, args.output_dir)
+
+if __name__ == "__main__":
+    main()

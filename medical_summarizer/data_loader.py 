@@ -1,0 +1,20 @@
+# medical_summarizer/data_loader.py 
+import os import pandas as pd 
+from torch.utils.data import Dataset, DataLoader 
+ 
+class MedicalLectureDataset(Dataset):     
+
+    def __init__(self, directory): 
+        self.file_paths = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.txt')]         self.data = []         for file_path in self.file_paths:             with open(file_path, 'r', encoding='utf-8') as file: 
+        self.data.append(file.read()) 
+ 
+    def __len__(self): 
+    return len(self.data) 
+
+    def __getitem__(self, idx): 
+    return self.data[idx] 
+ 
+def create_dataloader(directory, batch_size, num_workers): 
+    dataset = MedicalLectureDataset(directory)     
+    return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, shuffle=False) 
+ 
